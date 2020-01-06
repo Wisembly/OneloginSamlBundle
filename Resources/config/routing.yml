@@ -3,7 +3,7 @@ saml_metadata:
     defaults: { _controller: Hslavich\OneloginSamlBundle\Controller\SamlController::metadataAction }
 
 saml_acs:
-    path:     /saml/acs
+    path:     /saml/acs/{idp}
     defaults: { _controller: Hslavich\OneloginSamlBundle\Controller\SamlController::assertionConsumerServiceAction }
 
 saml_login:

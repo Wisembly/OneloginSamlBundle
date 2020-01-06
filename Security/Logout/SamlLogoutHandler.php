@@ -3,6 +3,9 @@
 namespace Hslavich\OneloginSamlBundle\Security\Logout;
 
 use Hslavich\OneloginSamlBundle\Security\Authentication\Token\SamlTokenInterface;
+use OneLogin\Saml2\Auth;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -14,15 +17,6 @@ class SamlLogoutHandler implements LogoutHandlerInterface, ContainerAwareInterfa
      * @var ContainerInterface
      */
     private $container;
-    /**
-     * @var array
-     */
-    private $authMap;
-
-    public function __construct(array $authMap)
-    {
-        $this->authMap = $authMap;
-    }
 
     /**
      * Sets the container.

@@ -6,6 +6,7 @@ use Hslavich\OneloginSamlBundle\Security\Authentication\Token\SamlToken;
 use OneLogin\Saml2\Auth;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -15,21 +16,9 @@ use Symfony\Component\Security\Http\Firewall\AbstractAuthenticationListener;
 class SamlListener extends AbstractAuthenticationListener implements ContainerAwareInterface
 {
     /**
-     * @var array
-     */
-    protected $authMap = [];
-    /**
      * @var ContainerInterface
      */
     protected $container;
-
-    /**
-     * @param array $authMap
-     */
-    public function setAuthMap(array $authMap): void
-    {
-        $this->authMap = $authMap;
-    }
 
     /**
      * Sets the container.
@@ -51,16 +40,14 @@ class SamlListener extends AbstractAuthenticationListener implements ContainerAw
      */
     protected function attemptAuthentication(Request $request)
     {
-        if (($relayState = $request->get('RelayState', null)) === null) {
-            throw new \Exception("Missing RelayState to determine IDP");
-        }
-        $path = parse_url($relayState, PHP_URL_PATH);
-        if (!isset($this->authMap[$path])) {
-            throw new \Exception(sprintf("Unknown IDP '%s'", $path));
-        }
-        $idp = $this->authMap[$path];
+        $idp = $request->get('idp');
+
         /** @var Auth $oneLoginAuth */
-        $oneLoginAuth = $this->container->get('onelogin_auth.' . $idp);
+        try {
+            $oneLoginAuth = $this->container->get('onelogin_auth.' . $idp);
+        } catch (ServiceNotFoundException $e) {
+            throw new \Exception(sprintf("Unknown IDP '%s'", $idp));
+        }
 
         $oneLoginAuth->processResponse();
         if ($oneLoginAuth->getErrors()) {

@@ -3,6 +3,7 @@
 namespace Hslavich\OneloginSamlBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,7 +32,11 @@ class SamlController extends AbstractController
             throw new \RuntimeException($error->getMessage());
         }
 
-        $this->get('onelogin_auth.' . $idp)->login();
+        try {
+            $this->get('onelogin_auth.' . $idp)->login();
+        } catch (ServiceNotFoundException $e) {
+            throw new \Exception(sprintf("Unknown IDP '%s'", $idp));
+        }
     }
 
     /**
@@ -40,7 +45,12 @@ class SamlController extends AbstractController
      */
     public function metadataAction(string $idp)
     {
-        $auth = $this->get('onelogin_auth.' . $idp);
+        try {
+            $auth = $this->get('onelogin_auth.' . $idp);
+        } catch (ServiceNotFoundException $e) {
+            throw new \Exception(sprintf("Unknown IDP '%s'", $idp));
+        }
+
         $metadata = $auth->getSettings()->getSPMetadata();
 
         $response = new Response($metadata);
