@@ -32,8 +32,10 @@ class SamlController extends AbstractController
             throw new \RuntimeException($error->getMessage());
         }
 
+        $returnTo = $request->query->get('redirect_success', null);
+
         try {
-            $this->get('onelogin_auth.' . $idp)->login();
+            $this->get('onelogin_auth.' . $idp)->login($returnTo);
         } catch (ServiceNotFoundException $e) {
             throw new \Exception(sprintf("Unknown IDP '%s'", $idp));
         }
